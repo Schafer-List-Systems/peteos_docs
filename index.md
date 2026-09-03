@@ -2,6 +2,8 @@
 
 Peteos is a library for developing agentic software, built on **Simple Object-Agentic Programming (sOAP)** — a paradigm that marries object-oriented programming with AI agents. Agentic objects are objects that can think, decide, and interact with their environment on their own.
 
+Object-agentic programming lets you write normal Python classes and expose their parts to an AI agent. Mark methods with `@tool`, call `invoke_agent()`, and the agent reasons about which tools to use to fulfill your task.
+
 ## Getting Started
 
 | Page | Description                                                                                      |

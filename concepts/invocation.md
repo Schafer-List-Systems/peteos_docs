@@ -103,3 +103,11 @@ The `persistent` flag controls whether the parent's thread ID is forwarded. When
 ### Thread ID Forwarding
 
 When an agentic object invokes sub-agents (via sandboxed code), thread IDs are forwarded. If a parent invocation has a `persistent_thread_id`, sub-agent calls inherit the same thread ID, allowing the agent to maintain continuity when delegating work to other objects or itself.
+
+When `persistent=True`, the sub-agent inherits the parent's thread ID and the session persists on the target object. **Once `persistent=True`, the thread ID is fixed** — it cannot be changed during the sub-agent's lifetime.
+
+```
+Parent thread: "parent-tick"
+  └─→ Sub-agent on Child (persistent=True) inherits thread_id="parent-tick"
+  └─→ Sub-agent on Child (persistent=False) gets a fresh thread
+```

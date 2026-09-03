@@ -67,7 +67,27 @@ Invoke a sub-agent on a target agentic object. The caller's class needs `invoke_
 | `persistent` | `bool` | `False` | If True, inherit the parent's thread ID. |
 | `timeout` | `float \| None` | `None` | Maximum seconds to wait for the lock on the target. |
 
-**Returns:** Structured output or `Error` object.
+| `output_schema` | Return type |
+|---|---|
+| `None` (default) | `str` — the sub-agent's plain text response |
+| `SomeClass` (dataclass, etc.) | `SomeClass` instance — structured result |
+| Sub-agent fails task | `Error` object (not an exception) |
+| Sub-agent API breaks | Exception raised |
+
+**Example:**
+
+```python
+@agentic_object(invoke_sub_agents=True)
+class Supervisor(AgenticObject):
+    def __init__(self):
+        self.specialist = Specialist()
+
+@agentic_object(invoke_sub_agents=True)
+class Specialist(AgenticObject):
+    @tool
+    def get_state(self) -> dict:
+        return {"status": "ready"}
+```
 
 ### `acquire()` / `release()`
 
