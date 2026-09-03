@@ -69,3 +69,12 @@ def add_item(self, item: str, quantity: int) -> str:
     self._items.append((item, quantity))
     return f"Added {quantity} of {item}."
 ```
+
+### Rules
+
+- Must be applied to methods of classes that inherit from `AgenticObject`
+- All `@tool` methods are collected via reflection when `invoke_agent()` is called
+- Undecorated methods are invisible to agents — callable only from normal Python code
+- Without parameters: name derived from method name, description from docstring
+- With parameters: name and description use explicit values; signature is always from the method
+- Parameters and return types are always derived from the method signature
