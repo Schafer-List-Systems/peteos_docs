@@ -40,11 +40,28 @@ The `config.json` format:
 {
     "model": "gpt-4",
     "required_tools": ["read_file"],
-    "auto_approve_tools": ["read_file", "list_files"],
+    "auto_approve_tools": ["read_file"],
     "tool_filter": ["read_.*"],
     "execution_environment": "REPL",
-    "behavior_policy": "responsive"
+    "behavior_policy": "responsive",
+    "max_truncation_retries": 2,
+    "max_output_turns": 3,
+    "max_output_attempts": 3
 }
 ```
+
+| Field | Type | Default | Purpose |
+|---|---|---|---|
+| `description` | string | from `description.md` | Role description. Only used if no `description.md` exists. |
+| `system_prompt` | string | from `system_prompt.md` | System prompt text. Only used if no `system_prompt.md` exists. |
+| `required_tools` | string[] | `[]` | Tool names available to this role. |
+| `execution_environment` | string | `"REPL"` | Execution environment identifier. |
+| `model` | string | `".*"` | Regex matching allowed model IDs. |
+| `auto_approve_tools` | string[] | `[]` | Tool names auto-approved without user confirmation. |
+| `tool_filter` | string[] | `[]` | Regex patterns; only matching tools are visible to the role. |
+| `behavior_policy` | string | `"responsive"` | `"responsive"` yields on output; `"continuous"` loops until `yield_back`. |
+| `max_truncation_retries` | int | `2` | Max retries for token-window truncation. |
+| `max_output_turns` | int | `3` | Max output-producing turns per `invoke_agent` call. |
+| `max_output_attempts` | int | `3` | Max `produce_output` attempts per output turn. |
 
 Markdown files take precedence over `config.json` entries. Returns a list of successfully loaded role names.
