@@ -57,7 +57,7 @@ async def invoke(
 ) -> Any
 ```
 
-Invoke a sub-agent on a target agentic object. Only works when `invoke_sub_agents=True` on the [`@agentic_object` decorator](./decorator-args.md).
+Invoke a sub-agent on a target agentic object. The caller's class needs `invoke_sub_agents=True` on the [`@agentic_object` decorator](./decorator-args.md).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
