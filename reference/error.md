@@ -14,6 +14,16 @@ else:
     print(f"Result: {result}")
 ```
 
+## Distinction from Exceptions
+
+| | `Error` | Exception |
+|---|---|---|
+| Meaning | Task failed | API failed |
+| Who | The agent | The framework |
+| When | Agent reasoned but couldn't satisfy the request | Internal workflow broke |
+| Return | Returned as value | Raised with `raise` |
+| Examples | "Could not determine...", "Insufficient info..." | `RuntimeError`, `ToolSchemaError` |
+
 ## Constructor
 
 ```python
