@@ -1,8 +1,3 @@
-"""Minimalistic Hello Pete example.
-
-    Usage: python docs/examples/hello-pete.py <URL> [api_type] [api_key]
-"""
-
 import asyncio
 from peteos import AgenticObject
 

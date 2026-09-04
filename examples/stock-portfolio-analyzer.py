@@ -1,5 +1,3 @@
-
-
 import asyncio
 import math
 import statistics
