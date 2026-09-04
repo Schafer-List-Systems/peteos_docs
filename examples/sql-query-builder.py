@@ -1,7 +1,4 @@
-"""Example: SQL Query Builder — agentic object with tools, sandbox code, and structured output.
 
-Usage: python sql-query-builder.py <backend-url>
-"""
 
 import asyncio
 from dataclasses import dataclass

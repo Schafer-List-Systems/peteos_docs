@@ -1,8 +1,3 @@
-"""Example: Candidate Profile — minimal sOAP example.
-
-Usage: python candidate-profile.py <backend-url> [api_type] [api_key]
-"""
-
 from enum import Enum
 import asyncio
 from peteos import AgenticObject, tool

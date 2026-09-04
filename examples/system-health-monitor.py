@@ -1,7 +1,4 @@
-"""Example: System Health Monitor — agentic object with tools, sandbox code, and structured output.
 
-Usage: python system-health-monitor.py <backend-url>
-"""
 
 import asyncio
 from dataclasses import dataclass, field

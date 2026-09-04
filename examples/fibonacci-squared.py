@@ -1,7 +1,4 @@
-"""Example: FibonacciSquared with sandboxed code execution.
 
-Usage: python fibonacci-squared.py <backend-url> [api_type] [api_key]
-"""
 
 import asyncio
 from peteos import AgenticObject, agentic_object

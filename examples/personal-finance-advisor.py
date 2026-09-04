@@ -1,7 +1,4 @@
-"""Example: Personal Finance Advisor — agentic object with tools, sandbox code, and structured output.
 
-Usage: python personal-finance-advisor.py <backend-url>
-"""
 
 import asyncio
 import sys

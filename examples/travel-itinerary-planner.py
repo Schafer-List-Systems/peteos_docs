@@ -1,7 +1,4 @@
-"""Example: Travel Itinerary Planner — agentic object with tools, sandbox code, and structured output.
 
-Usage: python travel-itinerary-planner.py <backend-url>
-"""
 
 import asyncio
 from dataclasses import dataclass

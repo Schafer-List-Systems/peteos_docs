@@ -1,7 +1,4 @@
-"""Example: Stock Portfolio Analyzer — agentic object with tools, sandbox code, and structured output.
 
-Usage: python stock-portfolio-analyzer.py <backend-url>
-"""
 
 import asyncio
 import math

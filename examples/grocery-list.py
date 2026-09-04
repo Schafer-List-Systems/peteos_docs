@@ -1,7 +1,4 @@
-"""Example: Grocery List — agentic object interaction.
 
-Usage: python grocery-list.py <backend-url>
-"""
 
 from enum import Enum
 import asyncio
