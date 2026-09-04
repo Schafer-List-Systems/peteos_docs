@@ -4,7 +4,6 @@ Usage: python system-health-monitor.py <backend-url>
 """
 
 import asyncio
-import sys
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -73,9 +72,6 @@ class HealthReport:
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     monitor = SystemHealthMonitor()
 
     # Record metrics

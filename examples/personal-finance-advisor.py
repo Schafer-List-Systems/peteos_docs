@@ -63,9 +63,6 @@ class BudgetRecommendation:
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     advisor = PersonalFinanceAdvisor()
 
     # Set income and add expenses

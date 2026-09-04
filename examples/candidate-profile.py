@@ -4,11 +4,7 @@ Usage: python candidate-profile.py <backend-url> [api_type] [api_key]
 """
 
 from enum import Enum
-import sys
-
 import asyncio
-
-from peteos.chatbot.manager import ChatBotManager
 from peteos import AgenticObject, tool
 
 
@@ -36,9 +32,6 @@ class CandidateProfile(AgenticObject):
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     biography = (
         "Sarah spent 5 years building React dashboards and recently "
         "added Python and FastAPI to her toolkit. She has also "

@@ -4,11 +4,8 @@ Usage: python sql-query-builder.py <backend-url>
 """
 
 import asyncio
-import sys
 from dataclasses import dataclass
 from typing import Optional
-
-from peteos.chatbot.manager import ChatBotManager
 from peteos import AgenticObject, agentic_object, tool
 
 
@@ -94,9 +91,6 @@ class QueryValidation:
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     builder = SQLQueryBuilder()
 
     # Explore schema

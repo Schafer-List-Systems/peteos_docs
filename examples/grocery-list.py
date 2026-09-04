@@ -5,9 +5,6 @@ Usage: python grocery-list.py <backend-url>
 
 from enum import Enum
 import asyncio
-import sys
-
-from peteos.chatbot.manager import ChatBotManager
 from peteos import AgenticObject, tool
 
 
@@ -56,9 +53,6 @@ class GroceryList(AgenticObject):
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     groceries = GroceryList()
 
     # Add items

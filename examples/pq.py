@@ -4,10 +4,7 @@ Lists all available models from configured LLM backends.
 Auto-configures on import from standard peteos.json locations.
 """
 
-import asyncio
 import sys
-
-import peteos  # triggers auto-configuration
 from peteos.chatbot import ChatBotManager
 
 

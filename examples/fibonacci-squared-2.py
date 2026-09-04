@@ -4,7 +4,6 @@ Usage: python fibonacci-squared.py <backend-url> [api_type] [api_key]
 """
 
 import asyncio
-
 from peteos import AdaptiveObject, agentic_object
 
 
@@ -18,9 +17,6 @@ class FibonacciSquared(AdaptiveObject):
 
 
 async def main():
-    # from peteos.utils.logger import setup_logging
-    # setup_logging(level="DEBUG", debug=True)
-
     sq = FibonacciSquared()
     print(await sq.invoke_agent(
         "Compute the sequence where each element is the sum of the squares of its two predecessors."

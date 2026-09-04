@@ -7,11 +7,9 @@ import asyncio
 import math
 import statistics
 import random
-import sys
 from dataclasses import dataclass
 from enum import Enum
 
-from peteos.chatbot.manager import ChatBotManager
 from peteos import AgenticObject, agentic_object, tool
 
 
@@ -104,9 +102,6 @@ class SectorAllocation:
 
 
 async def main():
-    #from peteos.utils.logger import setup_logging
-    #setup_logging(level="DEBUG", debug=True)
-
     analyzer = StockPortfolioAnalyzer()
 
     # Build portfolio
