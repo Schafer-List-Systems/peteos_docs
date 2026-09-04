@@ -3,7 +3,7 @@
 Welcome to Peteos.
 This section covers the essentials to get you up and running.
 First, you will learn how to install Peteos into your project.
-Then, you will set up the LLM backend and chatbot environment.
+Then, you will configure the LLM backend via `peteos.json`.
 Finally, you will see how to set up an agentic object and use it.
 
 
@@ -16,7 +16,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Clone the repository, then install Peteos:
+Either install via pip:
+
+```bash
+pip install peteos
+```
+
+Or clone the repository, then install Peteos:
 
 ```bash
 git clone https://github.com/yourusername/peteos.git
@@ -25,16 +31,6 @@ pip install .
 ```
 
 This installs Peteos as a package so you can `import peteos` from your own code.
-
-Peteos requires Python 3.10 or later. Its core dependencies are `aiohttp`, `httpx`, and `tiktoken` (for token counting). Optional extras cover feature-specific dependencies:
-
-```bash
-pip install ".[camera]"   # camera-related agentic objects
-pip install ".[web]"      # web browsing agentic objects
-pip install -e ".[dev]"   # test and lint dependencies
-```
-
-Install multiple extras together by separating them with commas:
 
 ```bash
 pip install -e ".[camera,web,dev]"
@@ -53,36 +49,42 @@ python -m pytest tests/unit/ -v
 This tests the core framework without requiring an LLM backend.
 
 
-## Setting Up the Environment
+## Configuring the LLM Provider
 
-Configure the LLM backend using the `ChatBotManager` singleton:
-
-```python
-from peteos.chatbot.manager import ChatBotManager
-
-await ChatBotManager.add_backend("local", "http://localhost:8000")
-```
-
-This registers an LLM backend that the agent harness uses during invocation.
-The backend URL is passed at runtime — no hardcoded endpoints.
-
-Additional options such as `streaming` and `max_tokens` can be configured per backend.
-A single backend may expose multiple models, and the agent harness automatically selects one if the backend supports more than one.
-Model patterns can be used to restrict which models are considered, and in case of ambiguity the harness picks a default. Details on configuration, model selection, and the full set of options are covered in the **[ChatBotManager reference](./reference/chatbot-manager.md)**.
-
-### Verifying Against a Live Backend
-
-With an LLM backend running, verify the integration with the chatbot tests:
+Peteos loads its configuration automatically on import from a `peteos.json` file.
+Copy the example file to get started:
 
 ```bash
-CHATBOT_TEST_BACKEND_URL=http://localhost:8000 \
-CHATBOT_TEST_BACKEND_NAME=test \
-CHATBOT_TEST_API_KEY=YOUR_API_KEY \
-CHATBOT_TEST_MODEL=LLM_MODEL \
-PYTHONPATH=. python -m pytest tests/integration/chatbot/test_[openai,gemini,anthropic]_live.py -v -m chatbot_integration
+cp peteos.json.example peteos.json
 ```
 
-Each test checks the chatbot API surface — model listing, streaming, non-streaming, and structured responses. Tests are skipped automatically if environment variables are missing.
+A minimal configuration for a local Ollama instance looks like this:
+
+```json
+{
+  "backends": [
+    {
+      "name": "ollama",
+      "url": "http://localhost:11434",
+      "model_priorities": {
+        "glm-4.7-flash:latest": 100
+      },
+      "max_output": 16384
+    }
+  ]
+}
+```
+
+Each backend in the `backends` array defines an LLM provider with options such as the API URL, type (`openai`, `anthropic`, `gemini`), API key, model priorities, streaming mode, and retry behaviour.
+For a complete list of backend options and how configuration is discovered across the filesystem, see the **[Configuration](./config/index.md)** and **[Backends](./config/backends.md)** reference pages.
+
+To verify that your configuration works, run the hello-pete example:
+
+```bash
+python3 examples/00_hello_pete.py
+```
+
+If everything is set up correctly, the example will connect to your configured backend and produce a response from the agent.
 
 ---
 
@@ -213,134 +215,9 @@ The `@agentic_object` decorator offers additional options such as `imports` to a
 
 Beyond single objects, agentic systems can compose into hierarchies of agents and sub-agents for more complex tasks. Within the sandbox, the Python code can access the agentic object directly as if it were a member function. See the **[Decorator Arguments reference](./reference/decorator-args.md)** for details.
 
-### Example: Stock Portfolio Analyzer
-
-A more complex example that combines all features — tools, sandboxed code execution, and structured output:
-
-```python
-import math
-import random
-import statistics
-from dataclasses import dataclass
-from enum import Enum
-
-from peteos import AgenticObject, agentic_object, tool
-
-
-class Sector(Enum):
-    TECHNOLOGY = "Technology"
-    HEALTHCARE = "Healthcare"
-    FINANCE = "Finance"
-    ENERGY = "Energy"
-    CONSUMER = "Consumer"
-
-
-@dataclass
-class Holding:
-    ticker: str
-    shares: int
-    sector: Sector
-
-
-@agentic_object(allow_code_execution=True, imports=[math, random, statistics])
-class StockPortfolioAnalyzer(AgenticObject):
-    """You are a stock portfolio analyzer. You manage a portfolio of stock
-    holdings, current prices, and historical returns. Use add_holding and
-    set_price to manage data, list_holdings to inspect the portfolio, and
-    get_returns to view historical returns. The sandbox can use math and
-    statistics to calculate performance metrics."""
-
-    def __init__(self):
-        super().__init__()
-        self._holdings: list[Holding] = []
-        self._prices: dict[str, float] = {}
-        self._returns: list[float] = []
-
-    @tool
-    def add_holding(self, ticker: str, shares: int, sector: Sector) -> str:
-        """Add a stock holding with ticker, number of shares, and sector."""
-        self._holdings.append(Holding(ticker=ticker, shares=shares, sector=sector))
-        return f"Added holding: {ticker} — {shares} shares ({sector.value})."
-
-    @tool
-    def set_price(self, ticker: str, price: float) -> str:
-        """Set the current price for a stock ticker."""
-        self._prices[ticker] = price
-        return f"Price set for {ticker}: {price:.2f}."
-
-    @tool
-    def set_returns(self, returns: list[float]) -> str:
-        """Set historical returns for a stock (list of daily percentage returns)."""
-        self._returns = returns
-        return f"Recorded {len(returns)} return values."
-
-    @tool
-    def list_holdings(self) -> list[dict]:
-        """Return all holdings with current prices."""
-        result = []
-        for h in self._holdings:
-            price = self._prices.get(h.ticker, 0.0)
-            result.append({
-                "ticker": h.ticker,
-                "shares": h.shares,
-                "sector": h.sector.value,
-                "price": price,
-                "value": round(h.shares * price, 2),
-            })
-        return result
-
-    @tool
-    def get_returns(self) -> list[float]:
-        """Return the historical returns (list of daily percentage returns)."""
-        return list(self._returns)
-
-
-@dataclass
-class PerformanceMetrics:
-    total_value: float
-    avg_return: float
-    std_deviation: float
-    sharpe_ratio: float
-
-
-@dataclass
-class SectorAllocation:
-    sectors: list[dict[str, float]]
-    recommended_allocation: dict[str, float]
-    rebalance_note: str
-```
-
-```python
-portfolio = StockPortfolioAnalyzer()
-await portfolio.invoke_agent(
-    "Add holdings: AAPL 50 shares (Technology), GOOGL 20 shares (Technology), "
-    "JNJ 30 shares (Healthcare), XOM 40 shares (Energy)."
-)
-await portfolio.invoke_agent(
-    "Set prices: AAPL 175.50, GOOGL 141.80, JNJ 156.30, XOM 104.20."
-)
-await portfolio.invoke_agent(
-    "Set returns: [0.5, -0.2, 0.8, -0.4, 0.3, 0.1, -0.6, 0.9, 0.2, -0.1]."
-)
-
-result = await portfolio.invoke_agent(
-    "Calculate total portfolio value and performance metrics (average return, "
-    "standard deviation, Sharpe ratio).",
-    output_schema=PerformanceMetrics,
-)
-print("Performance metrics:", result)
-
-result = await portfolio.invoke_agent(
-    "Analyze the sector allocation and suggest a recommended diversification.",
-    output_schema=SectorAllocation,
-)
-print("Sector allocation:", result)
-```
-
-The agent reasons about the portfolio, calls its tools to inspect data, and uses the sandbox to perform calculations — all while returning structured output compatible with OOP workflows. See the **[full example](./examples/stock-portfolio-analyzer.py)** for a runnable version.
-
 ### Where to Go Next
 
 - See the **[Concepts](./concepts/index.md)** section to understand how agentic objects work under the hood
 - See the **[Best Practices](./best-practices/index.md)** section for proven patterns
-- Look at the **[pre-built agentic objects](./reference/agentic-objects/)** for real-world examples, including [BashWorkspace](./reference/agentic-objects/bash-workspace.md) and [PdfTranscriber](./reference/agentic-objects/pdf-transcriber.md)
+- Browse the **[Examples](./examples/)** directory for runnable code — from a basic agentic object to sandboxed execution, adaptive objects with persistent sessions, and more
+- Look at the **[pre-built agentic objects](./reference/agentic-objects/)** for ready-to-use agentic classes, including [BashWorkspace](./reference/agentic-objects/bash-workspace.md) and [PdfTranscriber](./reference/agentic-objects/pdf-transcriber.md)
