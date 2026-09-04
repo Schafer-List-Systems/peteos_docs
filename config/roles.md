@@ -1,40 +1,31 @@
 # Roles
 
-You can customize any agentic object's role from the outside without changing the class code. This is useful for steering the agent toward a specific model — for example, applying an expensive model where it is needed and a cheaper one elsewhere. Roles are registered manually or loaded from disk.
+You can customize any agentic object's role from the outside without changing the class code. This is useful for steering the agent toward a specific model — for example, applying an expensive model where it is needed and a cheaper one elsewhere.
 
-## Manual Registration
+## Automatic Configuration
 
-```python
-from peteos.persona.role import Role
-from peteos.persona.rolemanager import RoleManager
-
-RoleManager.register_role(Role(
-    name="oap_MyAgent",
-    model="gpt-4",
-    description="A customized agent",
-))
-```
-
-The role name must match the canonical role name of the agentic object class it targets. Use `@agentic_object(role="...")` to set a custom name on your class.
-
-## Loading from Disk
-
-Instead of registering a transient role manually, a persistent role can be loaded from disk:
-
-```python
-loaded = RoleManager.load_from_dir("/path/to/roles/")
-```
-
-Each subdirectory represents a role:
+Roles are automatically loaded from the `roles/` sibling directory of `peteos.json` on import. Each subdirectory under `roles/` represents one role:
 
 ```
-oap_MyAgent/
-  description.md          # Required
-  system_prompt.md        # Optional
-  config.json             # Optional
+my-project/
+└── roles/
+    └── MyRole/
+        ├── description.md     # Required
+        ├── system_prompt.md   # Optional
+        └── config.json        # Optional
 ```
 
-The `config.json` format:
+No Python code is needed — roles are loaded and registered automatically.
+
+### Directory Structure
+
+| File | Required | Purpose |
+|---|---|---|
+| `description.md` | Yes | Role description — used by the agent to identify its identity. |
+| `system_prompt.md` | No | System prompt text to customize the agent's behavior. |
+| `config.json` | No | Optional runtime configuration — see below. |
+
+### Config File Format
 
 ```json
 {
@@ -52,11 +43,9 @@ The `config.json` format:
 
 | Field | Type | Default | Purpose |
 |---|---|---|---|
-| `description` | string | from `description.md` | Role description. Only used if no `description.md` exists. |
-| `system_prompt` | string | from `system_prompt.md` | System prompt text. Only used if no `system_prompt.md` exists. |
+| `model` | string | `".*"` | Regex matching allowed model IDs. |
 | `required_tools` | string[] | `[]` | Tool names available to this role. |
 | `execution_environment` | string | `"REPL"` | Execution environment identifier. |
-| `model` | string | `".*"` | Regex matching allowed model IDs. |
 | `auto_approve_tools` | string[] | `[]` | Tool names auto-approved without user confirmation. |
 | `tool_filter` | string[] | `[]` | Regex patterns; only matching tools are visible to the role. |
 | `behavior_policy` | string | `"responsive"` | `"responsive"` yields on output; `"continuous"` loops until `yield_back`. |
@@ -64,4 +53,27 @@ The `config.json` format:
 | `max_output_turns` | int | `3` | Max output-producing turns per `invoke_agent` call. |
 | `max_output_attempts` | int | `3` | Max `produce_output` attempts per output turn. |
 
-Markdown files take precedence over `config.json` entries. Returns a list of successfully loaded role names.
+Markdown files take precedence over `config.json` entries.
+
+## Manual Registration
+
+For dynamic scenarios, you can register roles manually at runtime.
+
+```python
+from peteos.persona.role import Role
+from peteos.persona.rolemanager import RoleManager
+
+RoleManager.register_role(Role(
+    name="oap_MyAgent",
+    model="gpt-4",
+    description="A customized agent",
+))
+```
+
+The role name must match the canonical role name of the agentic object class it targets. Use `@agentic_object(role="...")` to set a custom name on your class.
+
+You can also load roles from an arbitrary directory:
+
+```python
+loaded = RoleManager.load_from_dir("/path/to/roles/")
+```
