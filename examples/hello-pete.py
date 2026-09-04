@@ -6,7 +6,7 @@
 import asyncio
 import sys
 from peteos.chatbot.manager import ChatBotManager
-from peteos.oap.agentic_object import AgenticObject
+from peteos import AgenticObject
 
 
 class HelloPete(AgenticObject):

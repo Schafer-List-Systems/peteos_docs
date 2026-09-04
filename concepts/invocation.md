@@ -81,7 +81,7 @@ When sandboxed code execution is enabled on an agentic object, the sandbox provi
 When `invoke_sub_agents` is enabled on the agentic class, the agent can invoke another agentic object's agent through the `invoke()` method:
 
 ```python
-from peteos.oap.decorators import agentic_object
+from peteos import agentic_object
 
 @agentic_object(invoke_sub_agents=True)
 class Supervisor(AgenticObject):

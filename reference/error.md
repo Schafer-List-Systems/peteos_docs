@@ -1,7 +1,7 @@
 # Error
 
 ```python
-from peteos.oap import Error
+from peteos import Error
 ```
 
 `Error` is a value object returned by `invoke_agent` when the agent completed its work but could not produce the desired result. It is **not** an exception — it is returned alongside successful results.

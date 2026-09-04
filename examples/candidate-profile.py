@@ -9,8 +9,7 @@ import sys
 import asyncio
 
 from peteos.chatbot.manager import ChatBotManager
-from peteos.oap.agentic_object import AgenticObject
-from peteos.oap.decorators import tool
+from peteos import AgenticObject, tool
 
 
 class JobRole(Enum):

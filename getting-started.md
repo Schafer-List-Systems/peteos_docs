@@ -224,8 +224,7 @@ import statistics
 from dataclasses import dataclass
 from enum import Enum
 
-from peteos.oap.base import AgenticObject
-from peteos.oap.decorators import agentic_object, tool
+from peteos import AgenticObject, agentic_object, tool
 
 
 class Sector(Enum):

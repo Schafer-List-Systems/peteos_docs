@@ -5,8 +5,7 @@ Usage: python fibonacci-squared.py <backend-url> [api_type] [api_key]
 
 import asyncio
 
-from peteos.oap.agentic_object import AgenticObject
-from peteos.oap.decorators import agentic_object
+from peteos import AgenticObject, agentic_object
 
 
 @agentic_object(allow_code_execution=True)

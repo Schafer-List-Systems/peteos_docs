@@ -9,8 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from peteos.chatbot.manager import ChatBotManager
-from peteos.oap.agentic_object import AgenticObject
-from peteos.oap.decorators import agentic_object, tool
+from peteos import AgenticObject, agentic_object, tool
 
 
 class ActivityType(Enum):

@@ -1,7 +1,7 @@
 # AgenticObject
 
 ```python
-from peteos.oap.base import AgenticObject
+from peteos import AgenticObject
 ```
 
 Base class for all Object-Agentic Programming objects. Deriving from it gives every instance its own thinking agent. Configure class-level behavior with the [`@agentic_object` decorator](./decorator-args.md).

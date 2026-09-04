@@ -50,8 +50,7 @@ Consider an NPC in a game that needs to both navigate an environment and interac
 We build two focused agentic classes and compose them.
 
 ```python
-from peteos.oap.base import AgenticObject
-from peteos.oap.decorators import agentic_object, tool
+from peteos import AgenticObject, agentic_object, tool
 
 
 @agentic_object(allow_code_execution=True)
