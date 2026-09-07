@@ -79,13 +79,37 @@ If the lock cannot be acquired within the timeout period, a `TimeoutError` is ra
 
 See the **[Circular Invocation Timeout](../examples/circular-invocation-timeout.py)** example for a complete demonstration.
 
-### Via Sandbox
+Agents can invoke other agents' agents in three ways:
 
-When sandboxed code execution is enabled on an agentic object, the sandbox provides a `python_exec` tool that the agent can call. Within the sandbox, the Python code accesses the agentic object through the `self` parameter of the `func(self)` signature.
+### `invoke_agent()` — Direct invocation
 
-### Via `invoke()`
+The `invoke_agent()` function is the primary way a user calls an agent. It sends a prompt to the agent, which reasons about it and interacts with its own tools.
 
-When `invoke_sub_agents` is enabled on the agentic class, the agent can invoke another agentic object's agent through the `invoke()` method:
+For a complete list of arguments, see the **[AgenticObject reference](../reference/agentic-object-base.md)**.
+
+When a user calls `invoke_agent()` on multiple agents, each agent's conversation history remains completely separate. There is no way to trace how messages between different agents interacted with each other — for example, why one particular message was prompted to an agent, or where it originated. For details on session management and context, see **[State and Persistence](./state-and-persistence.md)**.
+
+### Indirect Invocation
+
+An agent can also indirectly invoke another agent by holding a reference to it as a member variable. This reference can be provided to the agent through a `@sandbox`-decorated function, enabling the agent to access and manipulate other agentic objects' state directly.
+
+When sandboxed code execution is enabled, the agent can write Python code that retrieves a reference to another agent (via a `@sandbox` method) and calls its member functions. If that member function calls `invoke_agent()` on its own agent, the second agent is invoked indirectly — the agent did not call the other agent's prompt-based communication layer directly, but rather accessed it through a member function call.
+
+```python
+@agentic_object(allow_code_execution=True)
+class AgentA(AgenticObject):
+    """I can access and manipulate other agents."""
+    @sandbox
+    def get_agent_b(self) -> AgentB:
+        """Return the AgentB instance."""
+        return self._agent_b
+```
+
+The agent can then write Python code that calls `self.get_agent_b()` to retrieve the reference, and pass it to another function or member function that may invoke the second agent's `invoke_agent()`.
+
+### `invoke()` — Direct invocation
+
+The `invoke()` method is the agent-facing way to invoke another agent directly. Unlike `invoke_agent()`, which sends a prompt to the agent's communication layer, `invoke()` prompts the target agent and has distinct thread ID behavior.
 
 ```python
 from peteos import agentic_object
