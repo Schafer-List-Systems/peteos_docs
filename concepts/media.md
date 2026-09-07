@@ -6,7 +6,8 @@ All three flows are supported for image content and are enabled by different cap
 ## Prerequisite: A Vision-Capable Backend
 
 Media handling requires an LLM backend that supports vision.
-The chosen model must be able to process base64-encoded image content blocks.
+The chosen model must be able to process images.
+The framework sends images to the model via the API's base64-encoded content blocks.
 Examples include vision-capable proprietary models and open source models such as Qwen 3.6 with vision support.
 
 ## Media Input: User to Agent
@@ -38,10 +39,12 @@ class ImageAnalyzer(AgenticObject):
 
     @tool(description="Send the processed image to the agent for analysis.")
     async def send_image_to_agent(self, runner) -> str:
-        # ... process image, get PNG bytes ...
+        with open("/path/to/image.jpg", "rb") as f:
+            image_bytes = f.read()
+
         await self._send_media(
-            data=png_bytes,
-            mime_type="image/png",
+            data=image_bytes,
+            mime_type="image/jpeg",
             runner=runner,
         )
         return "OK: Image sent to agent."
@@ -51,6 +54,8 @@ The `runner` argument is automatically injected by the framework and must be dec
 The developer provides raw bytes and a MIME type.
 The framework injects the image into the agent's reasoning loop.
 The agent will then see the image in its next iteration.
+
+> **Note:** `_send_media` calls `runner.queue_message()` to send the data to the LLM. This is fragile for some models because there is no clear association between the tool call and the provided image. However, this is required due to the legacy OpenAI Completions API, which does not support image content types in tool results. This will be fixed in a future release when the framework switches from the Completions API to the Responses API.
 
 ## Self-Initiated Media Access: Agent to Itself
 
