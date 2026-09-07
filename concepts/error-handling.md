@@ -29,6 +29,8 @@ Exceptions represent framework or tool failures — something broke inside the e
 | Internal framework error | `ValueError` (no agent available, invalid configuration), `TimeoutError` (lock not acquired within timeout), or other unexpected conditions. |
 | System prompt hook exception | A system prompt hook raises an exception during session setup. |
 
+> **Note:** The behavior of tool exceptions — whether they propagate out of `invoke_agent()` or are caught and shown to the agent — is under discussion and may change.
+
 ## Error Propagation
 
 In a chain of agentic objects, the behavior depends on how the call is made:
