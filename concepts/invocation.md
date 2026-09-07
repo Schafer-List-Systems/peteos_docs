@@ -1,16 +1,20 @@
 # Invocation
 
-An agentic object is invoked through [`invoke_agent()`](../reference/agentic-object-base.md#invoke_agent). The agent reasons about your prompt and responds, using tools to interact with the object's state as needed.
+An agentic object is invoked through `invoke_agent()`. The agent reasons about your prompt and responds, using tools to interact with the object's state as needed.
+
+For a complete list of arguments, see the **[AgenticObject reference](../reference/agentic-object-base.md)**.
 
 ## Basic Invocation
 
-Invoke an agentic object directly with a prompt:
+The simplest invocation creates an agentic object and calls `invoke_agent()` with a prompt:
 
 ```python
 pete = HelloPete()
 result = await pete.invoke_agent("Hello, what's your name?")
 print(result)  # My name is Pete.
 ```
+
+A full runnable example is available in [`examples/hello-pete.py`](../examples/hello-pete.py).
 
 ### Input Modality
 
@@ -22,7 +26,7 @@ The `output_schema` parameter forces the agent to return structured output match
 
 Supported schema types:
 - Scalar primitives: `str`, `int`, `float`, `bool`
-- Collection types: `list`, `list[T]`, `dict`, `dict[K, V]`
+- Collection types: `list`, `list[T]`, `dict`, `dict[K, V]`, `tuple`, `tuple[T, ...]`
 - `Enum` with string values
 - `dataclass` (including nested dataclasses, self-referential structures, and arbitrary nesting depth)
 - Union types (e.g. `str | int`, `MyClass | None`)
@@ -30,19 +34,11 @@ Supported schema types:
 When JSON parsing fails and the schema is a scalar or enum, the raw string is interpreted directly as the value. This handles cases where the agent returns a bare string instead of a JSON-encoded one.
 
 ```python
-from dataclasses import dataclass
-
-@dataclass
-class UserProfile:
-    name: str
-    age: int
-    active: bool
-
 result = await pete.invoke_agent(
-    "Based on this conversation, extract the user's profile.",
-    output_schema=UserProfile,
+    "Spell your name.",
+    output_schema=list[str],
 )
-print(result)  # UserProfile(name="Alice", age=30, active=True)
+print(result)  # ["P", "e", "t", "e"]
 ```
 
 ## Thread ID and Persistence
@@ -54,8 +50,9 @@ Invocations can be transient or persistent, controlled by the `persistent_thread
 Providing a `persistent_thread_id` persists the session so you can continue a conversation across multiple invocations. This gives the agent short-term memory about the recent conversation.
 
 ```python
-result = await obj.invoke_agent("Remember this: the answer is 42.", persistent_thread_id="my-session")
-result = await obj.invoke_agent("What number did I ask you to remember?", persistent_thread_id="my-session")
+await pete.invoke_agent("Remember this: the answer is 42.", persistent_thread_id="my-session")
+result = await pete.invoke_agent("What number did I ask you to remember?", persistent_thread_id="my-session")
+print(result)  # You asked me to remember 42.
 ```
 
 The `persistent_thread_id` is an arbitrary string you choose. Subsequent invocations with the same thread ID continue the same conversation.
@@ -65,12 +62,22 @@ The `persistent_thread_id` is an arbitrary string you choose. Subsequent invocat
 When no `persistent_thread_id` is provided, the conversation is anonymous and temporary. The session and runner are destroyed after the invocation completes, and every subsequent call starts with a fresh context.
 
 ```python
-result = await obj.invoke_agent("This conversation will not be remembered.")
+await pete.invoke_agent("Remember this: the answer is 42.")
+result = await pete.invoke_agent("What number did I ask you to remember?")
+print(result)  # I don't have any knowledge about that.
 ```
 
 ## Sub-Agent Invocation
 
-Agentic objects can invoke sub-agents in two ways:
+Agentic objects can invoke other agentic objects' agents through tools.
+Each agentic object has an invocation lock that prevents race conditions from concurrent tool calls.
+**Circular invocation dependencies will deadlock** — if Agent A calls Agent B and Agent B calls Agent A, each agent acquires its own lock and then tries to acquire the other's.
+Since the other's agent already holds that lock, neither can proceed.
+
+To prevent indefinite blocking in such scenarios, pass a `timeout` to `invoke_agent`.
+If the lock cannot be acquired within the timeout period, a `TimeoutError` is raised:
+
+See the **[Circular Invocation Timeout](../examples/circular-invocation-timeout.py)** example for a complete demonstration.
 
 ### Via Sandbox
 
