@@ -1,7 +1,8 @@
 # Steering the Agent
 
-When [`invoke_agent()`](../reference/agentic-object-base.md#invoke_agent) runs, the agent reasons in a loop until it returns its result.
-You can steer this loop from inside tool methods — the agent receives your input either as a **tool result** or as a **new message**, and from its perspective these are two very different signals.
+When [`invoke_agent()`](../reference/agentic-object-base.md#invoke_agent) runs, the agent reasons in a loop until it returns its result via one of the built-in tools `produce_output` or `produce_error`.
+During this loop, the agent can interact with its environment through `@tool` or `@sandbox` decorated member functions.
+When called directly by the agent, these member functions steer the agent by either returning a value that becomes a **tool result** or by adding a **new message** to the runner's queue — from the agent's perspective, these are two very different signals.
 
 ## Why
 
@@ -33,15 +34,12 @@ The agent sees this as the response to its `check_inventory` call and adjusts it
 ## Queuing New Messages
 
 You can also push new messages into the runner's event queue from inside a tool method.
-This requires the `runner` argument — PeteOS auto-injects it when you add `runner: "Runner | None" = None` at the end of a tool's signature.
+To get access to the runner, simply add a `runner` argument to your tool's signature — when provided, PeteOS will fill it with the runner instance.
 
 ```python
 @tool
-async def analyze_image(self, image_path: str, runner: "Runner | None" = None) -> str:
+async def analyze_image(self, image_path: str, runner: Runner) -> str:
     """Analyze an image and return the description. If the image is unclear, request additional photos from the user."""
-    if runner is None:
-        return "Runner not available."
-
     description = await self._process_image(image_path)
     if not description:
         from peteos.conversation import Message, ContentPart
@@ -70,6 +68,7 @@ async def analyze_image(self, image_path: str, runner: "Runner | None" = None) -
 ## Key Points
 
 - The `runner` argument is auto-injected by PeteOS when declared in a tool's signature.
-- Always check `if runner is None` — the runner may be absent in non-invocation contexts.
+- You may want to check `if runner is None` for non-invocation contexts.
 - Tool return values are always available and require no extra code.
 - Queued messages go into the runner's event queue and are drained before the next LLM call.
+- Queued messages always cause the agent to continue reasoning — the agent will loop to the next step and factor the new message into its LLM response, independent of any other pending tool results.
