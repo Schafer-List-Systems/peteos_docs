@@ -17,18 +17,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Either install via PyPI:
+Install via PyPI:
 
 ```bash
 pip install peteos
-```
-
-Or clone the repository, then install PeteOS:
-
-```bash
-git clone https://github.com/yourusername/peteos.git
-cd peteos
-pip install .
 ```
 
 This installs PeteOS as a package so you can `import peteos` from your own code.
