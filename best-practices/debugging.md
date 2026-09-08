@@ -1,4 +1,4 @@
-# Unit Testing
+# Debugging
 
 Test agentic objects in two layers: deterministic tests first, non-deterministic tests second. This gives fast, reliable feedback while the agent system is being built up.
 
@@ -8,7 +8,7 @@ Non-deterministic behavior makes testing harder — a single failure may just be
 
 ## How
 
-### Layer 1: Deterministic Tests
+### Deterministic Tests
 
 Test every method that does neither directly nor indirectly call `invoke_agent`. These are standard unit tests — fast, deterministic, and easy to debug.
 
@@ -29,44 +29,32 @@ def test_set_price_updates_value():
     assert item.current_price == 15.0
 ```
 
-### Layer 2: Agentic Tests
+### Agentic Tests
 
-Test the agent's behavior with `invoke_agent()`, accepting non-deterministic results. Use `BenchmarkRunner` to run each test across multiple iterations and assert a minimum success rate.
+Test the agent's behavior with `invoke_agent()`, accepting that results may vary between runs. These are simple tests like the deterministic tests above, but they can fail or pass depending on the agent's output.
 
 ```python
-from peteos.oap.benchmark import BenchmarkRunner, BenchmarkRow
-
-async def test_summarize_sentiment(row: BenchmarkRow) -> bool:
+async def test_summarize_sentiment():
     analyzer = SentimentAnalyzer()
-    analyzer._documents = row.input_dimensions["documents"]
+    analyzer._documents = ["Great product!", "Terrible service."]
     result = await analyzer.invoke_agent(
         "Summarize the overall sentiment.",
         output_schema=Summary,
     )
-    return isinstance(result, Summary) and result.text
+    assert isinstance(result, Summary)
+    assert result.text
 ```
 
-Define test cases as dimensions and add an iteration dimension for Monte Carlo runs:
+Because agent outputs are non-deterministic, individual runs may fail even when the code is correct. To evaluate whether an agent works reliably, run the tests multiple times and check the acceptance rate — a Monte Carlo approach. If the agent passes 8 out of 10 runs, the success rate is 80%, which may be sufficient depending on the use case.
 
-```python
-runner = BenchmarkRunner(test_summarize_sentiment)
-runner.add_dimension("documents", [
-    ["Great product!", "Terrible service."],
-    ["Absolutely love it!", "Five stars!"],
-])
-runner.add_dimension("run", range(5))
-report = await runner.run()
-summary = report.average(["success"])
-assert summary["success"] >= 0.8, f"Accuracy {summary['success']:.0%} below 80% threshold"
-```
+### Debugging
 
-The `BenchmarkRunner` executes each test-case + run combination, tracking running success rates and printing a final aggregate summary. The developer is responsible for defining the test function, setting dimensions, and choosing the threshold. The runner itself does not create objects or set thresholds.
+Since agentic object code is standard Python, you can debug it with a Python debugger. Set **breakpoints** in your `@tool` or `@sandbox` decorated functions, and when the agent calls them, the debugger will stop so you can inspect the state. This gives you a much better way to diagnose the runtime of your agentic system compared to cloud-based, graph-based, no-code tools that offer no such visibility. You can debug your agent code exactly the same way you debug any other Python source code.
 
 ## Key Principles
 
 - **Test deterministic methods directly.** Every method that does not call `invoke_agent` should have a deterministic unit test.
 - **Test agent invocations separately.** Use `invoke_agent()` only in the second layer.
-- **Set thresholds, not absolutes.** Non-deterministic tests should pass when accuracy exceeds a minimum rate.
+- **Expect variability.** Agent tests can pass or fail on different runs — this is normal.
+- **Use Monte Carlo for evaluation.** Loop agent tests multiple times to measure acceptance rates.
 - **Build up gradually.** Verify the deterministic foundation before adding agent layers.
-
-> See also: [Testing](../concepts/testing.md)
