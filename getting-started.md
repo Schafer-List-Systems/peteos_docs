@@ -33,29 +33,13 @@ pip install .
 
 This installs PeteOS as a package so you can `import peteos` from your own code.
 
-### Verifying the Installation
-
-Run the unit tests to confirm everything works:
-
-```bash
-python -m pytest tests/unit/ -v
-```
-
-This tests the core framework without requiring an LLM backend.
-
-
 ## Configuring the LLM Provider
 
 PeteOS loads its configuration automatically on import from a `peteos.json` file.
-Copy the example file to get started:
+For starters, create the `peteos.json` in you current working directory.
 
 ```bash
-cp peteos.json.example peteos.json
-```
-
-A minimal configuration for a local Ollama instance looks like this:
-
-```json
+cat > peteos.json <<EOF
 {
   "backends": [
     {
@@ -68,8 +52,10 @@ A minimal configuration for a local Ollama instance looks like this:
     }
   ]
 }
+EOF
 ```
 
+Adapt the URL to point to your LLM provider.
 Each backend in the `backends` array defines an LLM provider with options such as the API URL, type (`openai`, `anthropic`, `gemini`), API key, model priorities, streaming mode, and retry behaviour.
 For a complete list of backend options and how configuration is discovered across the filesystem, see the **[Configuration](./config/index.md)** and **[Backends](./config/backends.md)** reference pages.
 
