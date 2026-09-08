@@ -131,6 +131,8 @@ result = await supervisor.invoke(
 
 The `persistent` flag controls whether the parent's thread ID is forwarded. When `persistent=True`, sub-agent calls inherit the same thread ID, allowing continuity. When `persistent=False`, the sub-agent call is transient.
 
+Hooks are also forwarded to sub-agents via `invoke()`. See **[Invocation Hooks](./invocation-hooks.md)** for details on how hooks propagate across the invocation tree.
+
 ### Thread ID Forwarding
 
 When an agentic object invokes sub-agents (via sandboxed code), thread IDs are forwarded. If a parent invocation has a `persistent_thread_id`, sub-agent calls inherit the same thread ID, allowing the agent to maintain continuity when delegating work to other objects or itself.

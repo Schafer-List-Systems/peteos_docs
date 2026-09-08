@@ -2,9 +2,12 @@
 
 Hooks let you observe and control agent invocations. Pass a `hooks` dict as the `hooks` parameter to [`invoke_agent()`](../reference/agentic-object-base.md#invoke_agent):
 
+For a concrete example of an `on_tool_call` hook in action, see **[adventure-dungeon](../examples/adventure-dungeon.py)**.
+
 ```python
 hooks = {
     "on_invoke": [lambda ctx: print(ctx["prompt"])],
+    "on_tool_call": [lambda ctx: print(f"Tool: {ctx['tool_name']}")],
     "on_invoke_complete": [lambda ctx: print(ctx["result"])],
 }
 result = await obj.invoke_agent(
@@ -18,6 +21,12 @@ result = await obj.invoke_agent(
 ### `on_invoke`
 
 Fires **before** the agent starts reasoning. You can inspect the prompt or prevent the invocation.
+
+| Key | Type | Description |
+|---|---|---|
+| `role` | `str` | The agent's role name |
+| `prompt` | `str` | The prompt passed to `invoke_agent()` |
+| `session` | `Session` | The session object |
 
 ```python
 def log_and_guard(ctx):
@@ -37,6 +46,13 @@ The hook receives a context dict with `role`, `prompt`, and `session`. Return `N
 
 Fires **after** the agent finishes, regardless of outcome.
 
+| Key | Type | Description |
+|---|---|---|
+| `role` | `str` | The agent's role name |
+| `prompt` | `str` | The prompt passed to `invoke_agent()` |
+| `session` | `Session` | The session object |
+| `result` | `Any` | The agent's return value or an `Error` object |
+
 ```python
 def log_result(ctx):
     print(f"[{ctx['role']}] Done: {type(ctx['result']).__name__}")
@@ -47,11 +63,18 @@ result = await obj.invoke_agent(
 )
 ```
 
-The context dict includes `result` — the agent's return value or an `Error` object.
+The context dict includes `role`, `prompt`, `session`, and `result` — the agent's return value or an `Error` object.
 
 ### `on_tool_call`
 
 Fires **before each tool execution**. Use this to monitor or block specific tools.
+
+| Key | Type | Description |
+|---|---|---|
+| `role` | `str` | The agent's role name |
+| `session` | `Session` | The session object |
+| `tool_name` | `str` | The name of the tool being called |
+| `arguments` | `dict` | The parsed arguments for the tool |
 
 ```python
 def block_python_exec(ctx):
@@ -70,26 +93,27 @@ Return `None` to allow execution, or a non-`None` string to deny it — the tool
 
 ## Recursive Propagation
 
-Hooks are automatically forwarded to every sub-agent invocation.
-If an agentic object calls another via `invoke()` or `python_exec`, the same hooks fire for the sub-agent, giving you visibility across the entire invocation tree.
+Hooks are automatically forwarded to every sub-agent invocation via `invoke()`.
+If an agentic object calls another via `invoke()`, the same hooks fire for the sub-agent, giving you visibility across the entire invocation tree.
+
+**Note:** Hooks are not forwarded when an agent calls another agent's `invoke_agent()` from within a tool (e.g., `self._other.invoke_agent("message")`).
+In that case, the child agent's invocation receives no hooks — only sub-agent calls via `invoke()` propagate hooks.
 
 ## Combining Hooks
 
-Register multiple hooks per list.
-They execute in registration order.
+Register multiple hooks in the same list. They execute in registration order — the first hook runs before the second.
 
 ```python
-def log_before(ctx):
-    print(f"[{ctx['role']}] starting")
+def log1(ctx):
+    print(f"[{ctx['role']}] first hook")
 
-def log_after(ctx):
-    print(f"[{ctx['role']}] done: {type(ctx['result']).__name__}")
+def log2(ctx):
+    print(f"[{ctx['role']}] second hook")
 
 result = await obj.invoke_agent(
     prompt="Analyze this data.",
-    hooks={
-        "on_invoke": [log_before],
-        "on_invoke_complete": [log_after],
-    },
+    hooks={"on_invoke": [log1, log2]},
 )
 ```
+
+Both hooks fire when `on_invoke` is invoked, with `log1` executing before `log2`.
