@@ -13,7 +13,21 @@ Tools and sandboxed code can read and modify this state directly.
 Sessions (conversations) between an agentic object and its agent can be persisted to disk as JSON.
 Each session is stored in its own directory as a `session.json` file.
 
+```
+<config_dir>/agents/<role_name>/<session_uuid>/session.json
+```
+
+The `role_name` corresponds to the [`role`](./agentic-object-roles.md) assigned to the agentic object, and `session_uuid` is the session's unique identifier.
+
 ### Context Serialization
+
+Each active context is stored in the session directory as a `{context_id}.json` file, alongside `session.json`:
+
+```
+<config_dir>/agents/<role_name>/<session_uuid>/
+  session.json
+  <context_id>.json
+```
 
 The conversation history is represented as [`Context`](../advanced/context.md) objects, which are serialized to a `_json_dict` containing:
 - `id` — a UUID identifying the context.
@@ -42,10 +56,6 @@ The serialization and forking architecture is designed with debugging and reprod
 
 - **Reproducible outputs:** Because the full conversation context can be serialized, it is possible to reproduce particular agent outputs by re-invooking the agent with the same context.
 - **Debugging utilities:** The ability to understand exactly what the materialized chat history was when an LLM produced a particular response enables the development of debugging tools that inspect agent reasoning.
-- **Prompt tuning:** Reproducing outputs allows developers to iterate on system prompts and tool descriptions, measuring improvements quantitatively.
-- **Auto-tuning:** The structural foundation supports future tools that could automatically tune agentic systems by comparing forked context outputs.
-
-> **Note:** Some of these features are not yet fully implemented. The serialization infrastructure is in place with these use cases in mind.
 
 ## Token Counting
 
