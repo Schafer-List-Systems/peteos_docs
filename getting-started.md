@@ -33,14 +33,6 @@ pip install .
 
 This installs PeteOS as a package so you can `import peteos` from your own code.
 
-If you are just using PeteOS in your projects, the standard `pip install peteos` (above) is sufficient. If you plan to modify the framework itself, use the editable install mode, which links your installed package to the source code so changes take effect immediately without reinstalling:
-
-```bash
-pip install -e ".[camera,web,dev]"
-```
-
-The `-e` flag installs PeteOS in editable (development) mode, so changes to the source are reflected immediately without needing to reinstall.
-
 ### Verifying the Installation
 
 Run the unit tests to confirm everything works:
@@ -81,13 +73,7 @@ A minimal configuration for a local Ollama instance looks like this:
 Each backend in the `backends` array defines an LLM provider with options such as the API URL, type (`openai`, `anthropic`, `gemini`), API key, model priorities, streaming mode, and retry behaviour.
 For a complete list of backend options and how configuration is discovered across the filesystem, see the **[Configuration](./config/index.md)** and **[Backends](./config/backends.md)** reference pages.
 
-To verify that your configuration works, run the hello-pete example:
-
-```bash
-python3 examples/00_hello_pete.py
-```
-
-If everything is set up correctly, the example will connect to your configured backend and produce a response from the agent.
+If everything is set up correctly, the example below will connect to your configured backend and produce a response from the agent.
 
 ---
 
@@ -98,6 +84,8 @@ Behind the scenes, an agent operates on the object.
 The class docstring serves as the agent's system prompt.
 
 ```python
+from peteos import AgenticObject
+
 class HelloPete(AgenticObject):
     """You are Pete, a helpful assistant."""
 ```
