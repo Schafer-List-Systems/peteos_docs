@@ -8,9 +8,9 @@ Object-agentic programming lets you write normal Python classes and expose their
 
 | Page | Description                                                                                      |
 |---|--------------------------------------------------------------------------------------------------|
+| [Getting Started](./getting-started.md) | Installation, LLM backend setup, and your first agentic objects                                  |
 | [Introduction](./introduction.md) | A brief introduction to the sOAP paradigm |
 | [sOAP](./soap.md) | The sOAP philosophy, core principles, and mental model for agentic objects |
-| [Getting Started](./getting-started.md) | Installation, LLM backend setup, and your first agentic objects                                  |
 
 ## Learn
 
