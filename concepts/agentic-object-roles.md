@@ -8,7 +8,7 @@ See [Role reference](../reference/role.md) for the full field list.
 ## Role Naming
 
 Each agentic object class gets a role name automatically.
-By default the name is `oap_{ClassName}`.
+By default the name is the class name.
 You can override this via the `@agentic_object(role="...")` decorator:
 
 ```python
@@ -33,23 +33,19 @@ All other fields — `required_tools`, `auto_approve_tools`, `tool_filter`, `exe
 
 Each instance receives an independent copy of the merged role, so one instance never affects another.
 
-## Model Selection and Cost Control
+## Model Selection
 
 The role's `model` field is a regex pattern that determines which available model from a backend the agent will use.
 This gives you fine-grained control over which model family each agentic object class uses — for example, applying an expensive model where it is needed and a cheaper one elsewhere.
 See [Backends configuration](../config/backends.md) for how to set up the available models.
 
 ```python
-# Expensive model for complex reasoning
-RoleManager.register_role(Role(
-    name="oap_FinancialReport",
-    model="claude-3-opus-.*",
-))
+class FinancialReport(AgenticObject):
+    """You are a financial analyst."""
 
-# Cheaper model for simple tasks
 RoleManager.register_role(Role(
-    name="oap_ItemList",
-    model="gpt-4o-mini.*",
+    name="FinancialReport",
+    model="qwen-.*",
 ))
 ```
 
@@ -62,7 +58,7 @@ from peteos.persona.role import Role
 from peteos.persona.rolemanager import RoleManager
 
 RoleManager.register_role(Role(
-    name="oap_SupportBot",
+    name="SupportBot",
     model="gpt-4o-mini.*",
     description="A lightweight customer support agent",
 ))
@@ -79,7 +75,7 @@ RoleManager.load_from_dir("/config/roles/")
 The directory structure:
 
 ```
-oap_SupportBot/
+SupportBot/
   description.md        # A lightweight customer support agent
   system_prompt.md      # You handle common support requests...
   config.json           # {"model": "gpt-4o-mini.*"}
@@ -94,6 +90,6 @@ class ReportAnalyzer(AgenticObject):
 
 RoleManager.register_role(Role(
     name="email_analyst",
-    model="claude-3-opus-.*",
+    model="qwen-.*",
 ))
 ```
