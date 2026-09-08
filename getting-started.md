@@ -38,8 +38,7 @@ This installs PeteOS as a package so you can `import peteos` from your own code.
 PeteOS loads its configuration automatically on import from a `peteos.json` file.
 For starters, create the `peteos.json` in you current working directory.
 
-```bash
-cat > peteos.json <<EOF
+```json
 {
   "backends": [
     {
@@ -52,7 +51,6 @@ cat > peteos.json <<EOF
     }
   ]
 }
-EOF
 ```
 
 Adapt the URL to point to your LLM provider.
@@ -70,22 +68,20 @@ Behind the scenes, an agent operates on the object.
 The class docstring serves as the agent's system prompt.
 
 ```python
+import asyncio
 from peteos import AgenticObject
 
 class HelloPete(AgenticObject):
     """You are Pete, a helpful assistant."""
+
+async def main():
+    pete = HelloPete()
+    result = await pete.invoke_agent("Hello, what's your name?")
+    print(result)
+
+asyncio.run(main())
 ```
 
-That is all it takes to create an agentic class.
-Invoke it directly:
-
-```python
-pete = HelloPete()
-result = await pete.invoke_agent("Hello, what's your name?")
-print(result)  # My name is Pete.
-```
-
-The agent reasons about your prompt and responds directly.
 This is the simplest way to use an agentic object: create the instance, invoke the agent, get a response.
 
 ### Structured Output
