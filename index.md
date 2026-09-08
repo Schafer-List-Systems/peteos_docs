@@ -16,7 +16,7 @@ Object-agentic programming lets you write normal Python classes and expose their
 
 | Page | Description |
 |---|---|
-| [Concepts](./concepts/index.md) | Deep dives: composition, invocation, state and persistence, media handling, testing |
+| [Concepts](./concepts/index.md) | Deep dives: composition, invocation, state and persistence, media handling |
 | [Best Practices](./best-practices/index.md) | Proven patterns: guardrails, unit testing — how to build reliable agentic systems |
 | [Examples](./examples/) | Runnable code: hello pete, grocery list, stock portfolio analyzer, and more |
 

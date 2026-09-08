@@ -57,4 +57,3 @@ Future capabilities include:
 
 - [Agentic Object Roles](./agentic-object-roles.md) — how roles define the identity and toolset of agentic objects
 - [Composition](./composition.md) — combining multiple agentic classes
-- [Testing](./testing.md) — testing patterns in the sOAP paradigm

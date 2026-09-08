@@ -1,6 +1,6 @@
 # Concepts
 
-Deep dives into the core ideas behind sOAP: how agentic objects are composed, invoked, tested, and persisted.
+Deep dives into the core ideas behind sOAP: how agentic objects are composed, invoked, and persisted.
 
 ## Basic
 
@@ -20,4 +20,3 @@ Deep dives into the core ideas behind sOAP: how agentic objects are composed, in
 | [Agentic Object Roles](./agentic-object-roles.md) | Role naming, canonical role building, user overrides, model selection |
 | [State and Persistence](./state-and-persistence.md) | Internal state, session serialization, context forking, token counting, compaction |
 | [Adaptive Objects](./adaptive-objects.md) | Objects that manipulate and extend their own code at runtime across class, instance, and session levels |
-| [Testing](./testing.md) | Classical unit tests for deterministic code, Monte Carlo testing for agent behavior |
