@@ -15,7 +15,7 @@ class Direction(Enum):
 class Map:
     """A dungeon map with randomly placed items."""
 
-    def __init__(self, num_food: int = 20, num_treasure: int = 3, num_monsters: int = 8):
+    def __init__(self, num_food: int = 20, num_treasure: int = 3, num_monsters: int = 4):
         random.seed(42)
         self._grid: list[list[tuple[str, float] | None]] = [[None] * 10 for _ in range(10)]
 
@@ -156,17 +156,18 @@ class NPC(Map, Navigator, InventoryManager, AgenticObject):
 
     Game rules:
     - Move using move(north/south/east/west) to explore. The dungeon is 10x10 (0-9).
+    - Try to remember the map: it will only change, when you change it.
+    - RUNNING IN CIRCLES LEADS TO CERTAIN DEATH! YOU WILL FIND NO NEW ITEMS!
     - When you arrive at a position, you see what's there: food, treasure, or a monster.
     - Use pickup_item(item_name) to pick up food or treasure. It adds to your inventory.
-    - Monsters must be fought, not picked up.
-    - Fighting a monster: roll a dice. Your chance to win = min(0.95, 0.3 + health*0.4 + total_weight*0.05).
-      Winning grants a large treasure (5-15kg). Losing costs 0.1-0.3 health.
-    - Use eat(item, amount) to consume food and restore health (max 1.0). Each kg of food restores 1.0 health and reduces hunger by 2.0.
-    - A roaring sound grows louder as you approach monsters (volume 0.0=far, 1.0=adjacent). Use it to find or avoid them.
-    - Hunger formula: hunger += distance*0.1 * ((2 - health) + total_weight*0.1).
+    - Fighting a monster: roll a dice. Your chance to win = min(0.95, 0.3 + health*0.4 + total_weight*0.05). Choose with calculated precision.
+      Winning grants a large treasure (5-15kg). Losing costs 0.1-0.3 health. Treasure increases winning chances in future fights.
+    - Use eat(item, amount) to consume food and restore health (max health: 1.0). Each kg of food restores 1.0 health and reduces hunger by 2.0.
+    - A roaring sound grows louder as you approach monsters (volume 0.0=far, 1.0=you meet a monster). Use it to find them.
+    - Hunger formula: hunger += distance*0.1 * ((2 - health) + total_weight*0.1). More hunger depletes health faster!
     - After each move, health -= distance*0.1*hunger*0.01. If health <= 0, you die (game over).
-    - Always provide a short reason when moving to explain your decision (e.g., "following roar to monster", "searching for food").
-    - Your goal is to beat all monsters! You win when all monsters are defeated. Use your senses to find or avoid them!
+    - Always provide a reason when moving to explain your decision (e.g., "following roar to monster", "searching for food").
+    - YOU GOAL IS TO BEAT ALL MONSTERS! You win when all monsters are defeated. Use your senses to find them!
     - When you quit but you hear still monsters roar, you lose!
     """
 
