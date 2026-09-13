@@ -22,7 +22,7 @@ A prompt is always text. An optional `image` parameter accepts a local file path
 
 ### Output Schema
 
-The `output_schema` parameter forces the agent to return structured output matching the provided type. This enables converting unstructured information from an agent into structured data.
+The `output_schema` parameter controls the return type. For specific types (like `int`, a dataclass, etc.), the agent is expected to return matching structured output. For `None`, the agent can simply act and return anything (structured data, text, or `None`). For `Any`, any JSON or plain text response can be returned.
 
 Supported schema types:
 - Scalar primitives: `str`, `int`, `float`, `bool`

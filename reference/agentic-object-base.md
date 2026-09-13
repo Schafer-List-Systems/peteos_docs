@@ -41,7 +41,11 @@ Invoke this object's agent with a text prompt.
 | `timeout` | `float \| None` | `None` | Maximum seconds to wait for the invocation lock. Also used as a timeout for the agent loop. |
 | `image` | `str \| None` | `None` | Optional local file path or HTTP(S) URL to attach an image. |
 
-**Returns:** Structured output or `Error` object.
+**Returns:** The result depends on the output schema:
+- `None` → a structured output, the assistant's text or `None`
+- `Any` → JSON-parsed if valid, otherwise plain text
+- Specific type → structured output matching the type
+- On error → `Error` object (not an exception)
 
 **Raises:** `TimeoutError` if the invocation lock is not acquired or the agent loop exceeds `timeout`.
 
@@ -69,7 +73,8 @@ Invoke a sub-agent on a target agentic object. The caller's class needs `invoke_
 
 | `output_schema` | Return type |
 |---|---|
-| `None` (default) | `str` — the sub-agent's plain text response |
+| `None` (default) | Assistant's text response, or `None` if the agent acted silently |
+| `Any` | JSON-parsed if valid, otherwise a plain text answer |
 | `SomeClass` (dataclass, etc.) | `SomeClass` instance — structured result |
 | Sub-agent fails task | `Error` object (not an exception) |
 | Sub-agent API breaks | Exception raised |
