@@ -139,5 +139,5 @@ classDiagram
 
 ## Installation and Configuration
 
-For setup instructions please consult https://github.com/Schafer-List-Systems/petekit.
+For setup instructions please consult [https://github.com/Schafer-List-Systems/petekit](https://github.com/Schafer-List-Systems/petekit).
 

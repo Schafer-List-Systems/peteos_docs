@@ -3,7 +3,7 @@
 The PeteOS SKILL.md is a markdown file that can be provided to agentic systems like claude code or opencode to give them context about using peteOS correctly. 
 
 ## Download
-Clone the repository or download `skills/peteos/SKILL.md` directly from https://github.com/Schafer-List-Systems/peteskill.
+Clone the repository or download `skills/peteos/SKILL.md` directly from [https://github.com/Schafer-List-Systems/peteskill](https://github.com/Schafer-List-Systems/peteskill).
 
 ## Installation Steps
 1. Find your skills directory: e.g. `myProject/{.claude|.agents|.opencode}/skills`
