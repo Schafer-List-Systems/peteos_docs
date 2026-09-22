@@ -28,6 +28,7 @@ async def invoke_agent(
     persistent_thread_id: str | None = None,
     timeout: float | None = None,
     image: str | None = None,
+    hooks: dict[str, list[Callable]] | None = None,
 ) -> Any
 ```
 
@@ -40,6 +41,7 @@ Invoke this object's agent with a text prompt.
 | `persistent_thread_id` | `str \| None` | `None` | If set, reuses or creates a persistent session keyed by this ID. |
 | `timeout` | `float \| None` | `None` | Maximum seconds to wait for the invocation lock. Also used as a timeout for the agent loop. |
 | `image` | `str \| None` | `None` | Optional local file path or HTTP(S) URL to attach an image. |
+| `hooks` | `dict \| None` | `None` | Hook functions to observe or control the invocation. See [Invocation Hooks](../concepts/invocation-hooks.md). |
 
 **Returns:** The result depends on the output schema:
 - `None` → a structured output, the assistant's text or `None`

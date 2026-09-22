@@ -67,7 +67,7 @@ The context dict includes `role`, `prompt`, `session`, and `result` — the agen
 
 ### `on_tool_call`
 
-Fires **before each tool execution**. Use this to monitor or block specific tools.
+Fires **for every tool call record** — whether it is auto-approved, pending, or already denied. Use this to monitor, approve, or deny specific tools. Supports both synchronous and asynchronous approval flows.
 
 | Key | Type | Description |
 |---|---|---|
@@ -75,21 +75,60 @@ Fires **before each tool execution**. Use this to monitor or block specific tool
 | `session` | `Session` | The session object |
 | `tool_name` | `str` | The name of the tool being called |
 | `arguments` | `dict` | The parsed arguments for the tool |
+| `approval_status` | `ToolApprovalStatus` | Current status: `APPROVED`, `PENDING`, or `DENIED` |
+| `respond` | `RespondHandle` | Handle to approve or deny the call later |
+
+**Return semantics:**
+
+| Return value | Behavior |
+|---|---|
+| `None` | No-op — keep current status (observer mode); if `PENDING`, stays pending for async resolution |
+| `True` | Approve — allow the tool to proceed |
+| `False` or `str` | Deny — the string is the `denied_reason` shown to the agent |
+
+**RespondHandle** is passed in the context for PENDING tool calls. It has two methods:
+
+| Method | Description |
+|---|---|
+| `respond.approve()` | Approve the tool call and let execution continue |
+| `respond.deny(reason?)` | Deny the tool call; the reason is shown to the agent |
+
+Both methods are synchronous — you can call them from inside the hook or store the `respond` object and call it later from your async handler to resolve the pending call.
 
 ```python
-def block_python_exec(ctx):
+pending_approvals = []
+
+def on_tool_call(ctx):
+    tool = ctx["tool_name"]
+    args = ctx["arguments"]
+    status = ctx["approval_status"]
+    print(f"[{ctx['role']}] {tool}({args}) — {status.value}")
+
     if ctx["tool_name"] == "python_exec":
         return "Code execution is not allowed"
-    return None  # allow
+
+    if ctx["approval_status"] == ToolApprovalStatus.PENDING:
+        # Pending — store respond to resolve asynchronously
+        pending_approvals.append(ctx["respond"])
+        return None
+
+    return None
 
 result = await obj.invoke_agent(
     prompt="Write a file and count its lines.",
-    hooks={"on_tool_call": [block_python_exec]},
+    hooks={"on_tool_call": [on_tool_call]},
 )
 ```
 
-The context dict includes `role`, `session`, `tool_name`, and `arguments`.
-Return `None` to allow execution, or a non-`None` string to deny it — the tool and all remaining tools in the same group are skipped, and the agent is given another reasoning turn.
+Resolve from your async handler later:
+
+```python
+# In your handler:
+if decision == "approve":
+    pending_approvals.pop().approve()
+elif decision == "deny":
+    pending_approvals.pop().deny("Not allowed")
+```
 
 ### `before_tool_execution`
 
