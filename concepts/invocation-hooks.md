@@ -180,6 +180,25 @@ result = await obj.invoke_agent(
 
 The hook receives `(runner, active_context)`. `active_context` is the session's context object. Return `None` to proceed, or an `ExecStatus` to override the step result.
 
+### `after_receive_from_chatbot`
+
+Fires **right after the chatbot's response is complete** — before debug output, before the message is appended to the session context. Use this to inspect or act on the raw response while it is still fresh.
+
+```python
+def on_response(message):
+    print(f"Got response: {len(message.content)} parts")
+    return None
+
+result = await obj.invoke_agent(
+    prompt="Analyze this data.",
+    hooks={"after_receive_from_chatbot": [on_response]},
+)
+```
+
+The hook receives `message` — the `Message` object from the chatbot. This is the raw response before it is added to the session context. Return `None`.
+
+**Note:** This is distinct from `after_message_append`, which fires **after** the message is appended to the session context. `after_receive_from_chatbot` fires earlier, on the raw response, before any session state is modified.
+
 ### `after_step`
 
 Fires **after each reasoning step completes** — whether the step produced text, ran tools, or is waiting. Use this to monitor progress, apply policies, or inject state between turns.
