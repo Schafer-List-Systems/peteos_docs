@@ -67,67 +67,62 @@ The context dict includes `role`, `prompt`, `session`, and `result` — the agen
 
 ### `on_tool_call`
 
-Fires **for every tool call record** — whether it is auto-approved, pending, or already denied. Use this to monitor, approve, or deny specific tools. Supports both synchronous and asynchronous approval flows.
+Fires **for every tool call** in the agent's response. You can monitor, approve, or deny tools before they run. The hook also supports an async deferral pattern — a hook can defer its decision to a later turn.
+
+**Context fields the hook receives:**
 
 | Key | Type | Description |
 |---|---|---|
 | `role` | `str` | The agent's role name |
 | `session` | `Session` | The session object |
-| `tool_name` | `str` | The name of the tool being called |
-| `arguments` | `dict` | The parsed arguments for the tool |
-| `approval_status` | `ToolApprovalStatus` | Current status: `APPROVED`, `PENDING`, or `DENIED` |
-| `respond` | `RespondHandle` | Handle to approve or deny the call later |
+| `tool_name` | `str` | Name of the tool being called |
+| `arguments` | `dict` | Parsed arguments for the tool |
+| `approval_status` | `ToolApprovalStatus` | Current accumulated status: `APPROVED`, `PENDING`, or `DENIED` |
+| `denied_reason` | `str \| None` | Denial reason from a prior hook in the chain, if any |
+| `respond` | `RespondHandle` | Handle to resolve a `PENDING` call later |
 
-**Return semantics:**
+**What the hook can return:**
 
 | Return value | Behavior |
 |---|---|
-| `None` | No-op — keep current status (observer mode); if `PENDING`, stays pending for async resolution |
-| `True` | Approve — allow the tool to proceed |
-| `False` or `str` | Deny — the string is the `denied_reason` shown to the agent |
+| `None` | No opinion — the next hook decides (or stays `PENDING` for async resolution) |
+| `True` | Approve immediately — the tool runs if all hooks approve |
+| `False` or `str` | Deny immediately — `str` is the reason shown to the LLM |
 
-**RespondHandle** is passed in the context for PENDING tool calls. It has two methods:
+**The deferred (async) pattern:**
 
-| Method | Description |
-|---|---|
-| `respond.approve()` | Approve the tool call and let execution continue |
-| `respond.deny(reason?)` | Deny the tool call; the reason is shown to the agent |
-
-Both methods are synchronous — you can call them from inside the hook or store the `respond` object and call it later from your async handler to resolve the pending call.
+If the hook returns `None` and `approval_status` is `PENDING`, the call is deferred. Store the `respond` handle and call it later from an async handler:
 
 ```python
-pending_approvals = []
+pending = []
 
 def on_tool_call(ctx):
-    tool = ctx["tool_name"]
-    args = ctx["arguments"]
-    status = ctx["approval_status"]
-    print(f"[{ctx['role']}] {tool}({args}) — {status.value}")
-
-    if ctx["tool_name"] == "python_exec":
-        return "Code execution is not allowed"
-
     if ctx["approval_status"] == ToolApprovalStatus.PENDING:
-        # Pending — store respond to resolve asynchronously
-        pending_approvals.append(ctx["respond"])
+        pending.append(ctx["respond"])  # store to resolve later
         return None
+    return None
 
+# ... later, in your async handler:
+if user_approved:
+    pending.pop().approve()
+else:
+    pending.pop().deny("Not allowed by policy")
+```
+
+**Async hooks are supported** — the hook may be `async def`. PeteOS awaits it automatically.
+
+**Cascading denials:** denying one tool in a response also denies all remaining tools in that response. The LLM sees the denial reason in the tool result placeholder, so the model understands why the tool didn't run.
+
+```python
+def guard(ctx):
+    if ctx["tool_name"] == "delete_file":
+        return "File deletion is not permitted"
     return None
 
 result = await obj.invoke_agent(
-    prompt="Write a file and count its lines.",
-    hooks={"on_tool_call": [on_tool_call]},
+    prompt="Clean up old logs.",
+    hooks={"on_tool_call": [guard]},
 )
-```
-
-Resolve from your async handler later:
-
-```python
-# In your handler:
-if decision == "approve":
-    pending_approvals.pop().approve()
-elif decision == "deny":
-    pending_approvals.pop().deny("Not allowed")
 ```
 
 ### `before_tool_execution`
