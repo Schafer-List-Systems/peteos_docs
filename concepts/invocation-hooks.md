@@ -250,22 +250,25 @@ result = await obj.invoke_agent(
 
 The hook receives `(runner, message)`. `message` is the notification `Message`. Return `None`.
 
-### `on_truncation_exhausted`
+### `on_truncation`
 
-Fires when the **LLM keeps getting cut off by the token limit** after repeated retries. This means the model produced a too-long response and the system gave it a conciseness reminder, but it kept overflowing. Use this to log failures, reset state, or replace the context.
+Fires **every time the LLM returns a truncated response** — including the final exhausted one. This is the single hook for all truncation events, replacing the former `on_truncation_exhausted`. Use it to attempt context reduction, log failures, or reset state.
 
 ```python
-def on_exhausted(counter, max_retries):
-    print(f"Truncation limit hit: {counter}/{max_retries}")
-    raise RuntimeError("Giving up")
+def on_truncation(runner, counter, max_retries):
+    print(f"Truncation #{counter} of {max_retries}")
+    # counter >= max_retries means this is the last retry before the error is raised
 
 result = await obj.invoke_agent(
     prompt="Analyze this data.",
-    hooks={"on_truncation_exhausted": [on_exhausted]},
+    hooks={"on_truncation": [on_truncation]},
 )
 ```
 
-The hook receives `(counter, max_retries)` — the current count and the limit. The hook is called **instead of** raising, giving you a chance to handle it. If it returns normally, the RuntimeError is still raised afterward.
+The hook receives `(runner, counter, max_retries)`:
+- `runner`: the active Runner — access the context and chatbot config through it
+- `counter`: the current truncation count for this session
+- `max_retries`: the limit — `counter >= max_retries` means this is the last attempt
 
 ## Recursive Propagation
 
