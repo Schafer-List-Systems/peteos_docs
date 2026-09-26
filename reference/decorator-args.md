@@ -80,3 +80,35 @@ def add_item(self, item: str, quantity: int) -> str:
 - Without parameters: name derived from method name, description from docstring
 - With parameters: name and description use explicit values; signature is always from the method
 - Parameters and return types are always derived from the method signature
+
+### `tool_policy()` — per-call approval control
+
+Inside a `@tool` method, you can define a nested `tool_policy()` function to express when a specific call is safe to execute. The policy reads the method's parameters directly from its enclosing scope — no `ctx` dict, no parameter mirroring.
+
+**Return values:**
+
+| Return | Effect |
+|---|---|
+| `True` | Approve this call |
+| `False` | Deny this call — the denial is immediate and final |
+| `None` | No opinion — the decision is made by other hooks or the outer system |
+
+Only define a policy when you have something to say. Return `None` when in doubt — this lets other policies or hooks in the chain weigh in.
+
+**Example:**
+
+```python
+@tool
+def bash_exec(self, command: str, timeout: int = 30):
+    def tool_policy():
+        blocked = {"rm", "curl", "wget", "nc", "bash"}
+        if command.split()[0] in blocked:
+            return False
+        if command.split()[0] in {"ls", "pwd", "find", "cat", "head", "tail"}:
+            return True
+        return None  # no opinion — let the system decide
+
+    return self._bash(command, timeout=timeout)
+```
+
+The policy is picked up automatically at class instantiation. No registration elsewhere is needed. See [Tool Policy](../concepts/tool-policy.md) for the full concept.

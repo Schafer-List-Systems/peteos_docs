@@ -20,3 +20,4 @@ Deep dives into the core ideas behind sOAP: how agentic objects are composed, in
 | [Agentic Object Roles](./agentic-object-roles.md) | Role naming, canonical role building, user overrides, model selection |
 | [Adaptive Objects](./adaptive-objects.md) | Objects that manipulate and extend their own code at runtime across class, instance, and session levels |
 | [State and Persistence](./state-and-persistence.md) | Internal state, session serialization, context forking, token counting, compaction |
+| [Tool Policy](./tool-policy.md) | Per-call, argument-aware approval decisions co-located inside `@tool` methods |
